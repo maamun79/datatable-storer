@@ -11,6 +11,13 @@ class DatatableStorerServiceProvider extends ServiceProvider
     {
         // Load Migrations
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
+        // Load Views from the package
+        $this->loadViewsFrom(__DIR__.'/resources/views', 'datatable-storer');
+
+        // Allow publishing the JS file to the public folder
+        $this->publishes([
+            __DIR__.'/resources/js' => public_path('vendor/datatable-storer'),
+        ], 'datatable-storer-assets');
 
         // Load Routes
         $this->registerRoutes();
