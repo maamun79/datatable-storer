@@ -1,10 +1,10 @@
-// packages/smart-dev/datatable-storer/src/resources/js/datatable-storer.js
-window.initDatatableStorer = function(table, identifier, saveUrl, csrfToken) {
-    
-    // 1. Build the switches inside the modal
+window.initDatatableStorer = function(table, identifier) {
     let container = $('#datatable-column-switches');
+    if (!container.length) return;
+
     container.empty();
 
+    // Build Switches based on current visibility
     table.columns().every(function () {
         let column = this;
         let title = $(column.header()).text().trim();
@@ -16,21 +16,23 @@ window.initDatatableStorer = function(table, identifier, saveUrl, csrfToken) {
         
         container.append(`
             <div class="form-check form-switch mb-2">
-                <input class="form-check-input col-toggle" type="checkbox" data-column="${index}" id="col_${identifier}_${index}" ${isChecked}>
+                <input class="form-check-input col-toggle" type="checkbox" 
+                       data-column="${index}" id="col_${identifier}_${index}" ${isChecked}>
                 <label class="form-check-label" for="col_${identifier}_${index}">${title}</label>
             </div>
         `);
     });
 
-    // 2. Handle Toggle
+    // Handle Toggle Switch
     $(document).off('change', '.col-toggle').on('change', '.col-toggle', function() {
         let colIdx = $(this).data('column');
         table.column(colIdx).visible($(this).is(':checked'));
-        table.state.save(); // Triggers the package's stateSaveCallback
+        table.state.save(); // This triggers stateSaveCallback in your Blade
     });
 
-    // 3. Handle Reorder
+    // Handle Column Reorder event
     table.on('column-reorder', function() {
         table.state.save();
+        // Optional: Re-sync switches if indices change
     });
 };
