@@ -4,7 +4,23 @@ window.initDatatableStorer = function(table, identifier) {
 
     container.empty();
 
-    // Build Switches based on current visibility
+    // 1. Force Visibility Sync (Fixes the "Refresh" issue)
+    // We wait a tiny bit to ensure DataTables has finished initial draw
+    table.columns().every(function () {
+        let column = this;
+        let state = table.state.loaded(); // Get the state that was just loaded
+        
+        if (state && state.columns) {
+            let colState = state.columns[column.index()];
+            if (colState && colState.visible !== undefined) {
+                // Force the visibility from the state
+                column.visible(colState.visible, false); 
+            }
+        }
+    });
+    table.draw(false); // Redraw without resetting paging
+
+    // 2. Build Switches
     table.columns().every(function () {
         let column = this;
         let title = $(column.header()).text().trim();
@@ -23,16 +39,10 @@ window.initDatatableStorer = function(table, identifier) {
         `);
     });
 
-    // Handle Toggle Switch
+    // 3. Handle Switch Changes
     $(document).off('change', '.col-toggle').on('change', '.col-toggle', function() {
         let colIdx = $(this).data('column');
         table.column(colIdx).visible($(this).is(':checked'));
-        table.state.save(); // This triggers stateSaveCallback in your Blade
-    });
-
-    // Handle Column Reorder event
-    table.on('column-reorder', function() {
         table.state.save();
-        // Optional: Re-sync switches if indices change
     });
 };
